@@ -10,8 +10,7 @@ from django.core.exceptions import ValidationError
 import random
 import string
 import copy
-
-
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -259,12 +258,104 @@ class TestTaskName(TestCase):
 
 
 
+class TestDeadlineField(TestCase):
+
+    def setUp(self) -> None:
+
+        self.username = "username"
+        self.password = "password"
+
+        self.author = User(username=self.username, password=self.password)
+
+        self.author.save()
 
 
+        self.task = Task(**asdict(TaskData()))
+        self.task.save()
+        self.task.authors.set([self.author])
+        self.task.steps.set(get_steps())
 
 
+        return super().setUp()
+    
+    
+    
+    def test_valid_deadline_value_passed(self):
+        
+        self.task.deadline = timezone.now()
+
+        self.task.full_clean()
+
+        self.task.save()
+
+        saved = Task.objects.first()
+
+        deadline = saved.deadline
+
+        self.assertTrue(deadline.year==2024, msg="year value should match")
+        self.assertTrue(deadline.month==timezone.now().month)
+        self.assertTrue(deadline.day==timezone.now().day)
+        self.assertTrue(deadline.hour==timezone.now().hour, msg=" created task deadline hour shoul be equal to current hour")
+
+    def test_deadline_past_year_validation_error(self):
+
+        self.task.deadline = timezone.datetime(2020,11,11)
+
+        with self.assertRaisesMessage(ValidationError, expected_message=f"year value({self.task.deadline.year}) is not valid!"):
+            self.task.full_clean()
+
+    def test_deadline_past_month_validation_error(self):
+
+        self.task.deadline = timezone.datetime(2025,1,11)
+
+        with self.assertRaisesMessage(ValidationError, expected_message=f"month value({self.task.deadline.month}) is not valid!"):
+            self.task.full_clean()
+
+    def test_deadline_past_day_validation_error(self):
+
+        self.task.deadline = timezone.datetime(2025,10,4)
+
+        with self.assertRaisesMessage(ValidationError, expected_message=f"day value({self.task.deadline.day}) is not valid!"):
+            self.task.full_clean()
 
 
+class TestPriorityField(TestCase):
+    
+    def setUp(self) -> None:
+
+        self.username = "username"
+        self.password = "password"
+
+        self.author = User(username=self.username, password=self.password)
+        self.author.save()
+
+
+        self.task = Task(**asdict(TaskData()))
+        self.task.save()
+        self.task.authors.set([self.author])
+        self.task.steps.set(get_steps())
+
+        return super().setUp()
+
+    def test_task_priority_high(self):
+
+        self.task.priority = Task.Priority.HIGH
+        self.task.full_clean()
+        self.task.save()
+
+        saved_task = Task.objects.filter(id=self.task.id).first()
+
+        self.assertTrue(saved_task.priority==Task.Priority.HIGH)
+    
+    def test_task_priority_random_text(self):
+        self.task.priority = "".join(random.choices(string.ascii_letters,k=10))
+
+        
+        with self.assertRaises(ValidationError):
+            self.task.full_clean()
+
+        with self.assertRaisesMessage(ValidationError, "is not a valid choice"):
+            self.task.full_clean()
 
 
 
