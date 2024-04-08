@@ -35,17 +35,18 @@ class Task(models.Model):
     name = models.CharField(max_length=250, verbose_name="task name", blank=False, null=False, validators=[
         MinLengthValidator(10, message="name value has to be at least 10 symbols"),
         MaxLengthValidator(250, message="maximum length is 250 symbols")
-        ])
+
+        ], error_messages={"required": "Name field is required!"})
     description = models.TextField(max_length=10000, verbose_name="task description", blank=True, null=True)
     
     deadline = models.DateTimeField(verbose_name="task deadline", blank=False, validators=[DeadlineValidator])
-    priority = models.CharField(choices=Priority.choices, blank=False, default=Priority.LOW, max_length=10)
+    priority = models.CharField(choices=Priority.choices, blank=True, default=Priority.LOW, max_length=10)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     authors = models.ManyToManyField(User, related_name="author_tasks", blank=False)
-    assigned_to = models.OneToOneField(User, related_name="tasks", on_delete=models.PROTECT, null=True, blank=True) #Assignee
+    assigned_to = models.ForeignKey(User, related_name="tasks", on_delete=models.PROTECT, null=True, blank=True) #Assignee
 
     steps = models.ManyToManyField("Step")
 
