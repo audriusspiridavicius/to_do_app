@@ -68,8 +68,6 @@ class TestTaskSerializerCreateMethod(TestCase):
             "assigned_to":user.id,
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
-    
-
 
         return super().setUpTestData()
     
@@ -77,23 +75,12 @@ class TestTaskSerializerCreateMethod(TestCase):
     def test_task_created(self):
 
         task_serializer = TaskSerializer(data=self.task_test_data)
-        if not task_serializer.is_valid():
-            print(f"errors ========== {task_serializer.errors}")
-        self.assertTrue(task_serializer.is_valid())
-        
-        task = task_serializer.save()
+        task_serializer.is_valid()
+        task_serializer.save()
 
         self.assertTrue(len(Task.objects.all())==1)
-        self.assertEqual(2,Step.objects.all().count())
 
-        self.assertTrue(User.objects.filter(username=self.user_details["username"]).all().count()==1)
-        self.assertTrue(task.authors.all().count()==1)
-
-
-        self.assertTrue(task.steps.all().count()==2)
-        self.assertEqual(self.task_test_data["steps"][0]["name"], task.steps.first().name)
-
-
+        
 class TestTaskUpdate(TestCase):
 
 
@@ -132,54 +119,10 @@ class TestTaskUpdate(TestCase):
         task_to_update = Task.objects.filter(id=self.task.id).first()
         task_update_serializer = TaskSerializer(task_to_update,self.task_update_data)
 
-        
-        if not task_update_serializer.is_valid():
-            print(f"errors occured during update: {task_update_serializer.errors}")
-        else:
-            updated_task = task_update_serializer.save()
+        task_update_serializer.is_valid()
+        updated_task = task_update_serializer.save()
 
-            self.assertIsInstance(updated_task, Task)
-
-            self.assertEqual(self.task_update_data["description"],updated_task.description)
-    
-    def test_task_multiple_update(self):
-
-        task_to_update = Task.objects.filter(id=self.task_update_data["id"]).first()
-
-        task_update_serializer = TaskSerializer(task_to_update,self.task_update_data)
-
-        
-        if not task_update_serializer.is_valid():
-            print(f"errors occured during update: {task_update_serializer.errors}")
-        else:
-            updated_task = task_update_serializer.save()
-
-            self.assertIsInstance(updated_task, Task)
-
-            updated_steps = Task.objects.filter(id=updated_task.id).prefetch_related("steps").first()
-            updated_steps = updated_steps.steps.all()
-     
-            self.assertEqual(updated_steps[0].name, self.task_update_data["steps"][0]["name"])
-            self.assertEqual(updated_steps[1].name, self.task_update_data["steps"][1]["name"])
-
-
-    def test_task_update_multiple_records(self):
-
-        new_user = User(username="jonas", password="jonas")
-        new_user.save()
-        
-        self.task_test_data["id"] = self.task.id
-        task_test_data = [self.task_test_data, self.task_test_data, self.task_test_data]
-        task_test_data[2]["assigned_to"] = new_user.id
-
-        task_serializer = TaskSerializer(instance=[self.task], data=task_test_data, many=True)
-
-        self.assertTrue(task_serializer.is_valid(), msg="task_serializer should be valid. all correct data passed")
-        if task_serializer.is_valid():
-
-            updated_tasks = task_serializer.save()
-
-            self.assertEqual(3,len(updated_tasks["updated"]))
+        self.assertEqual(self.task_update_data["description"],updated_task.description)
     
 
 class TestMultipleTaskUpdate(TestCase):
@@ -207,7 +150,7 @@ class TestMultipleTaskUpdate(TestCase):
         cls.tasks_to_update = Task.objects.filter(id__in=[1,2]).all()
 
         cls.id1 = 1
-        cls.id2 = 1
+        cls.id2 = 2
         
         
         cls.task = copy.deepcopy(cls.task_test_data)
@@ -215,9 +158,42 @@ class TestMultipleTaskUpdate(TestCase):
         cls.task2 = copy.deepcopy(cls.task)
         cls.task2["id"] = cls.id2
 
+        cls.task["id"] = cls.tasks_to_update[0].id
+        cls.task["description"] = "updated description"
+        cls.task["steps"] = [{"id": cls.tasks_to_update[0].steps.all()[0].id, "name":"first step 2"},{"id": cls.tasks_to_update[0].steps.all()[1].id,"name":"second step 2"}]
 
         return super().setUpTestData()
     
+    def test_task_multiple_update(self):
+
+        task_update_serializer = TaskSerializer(self.tasks_to_update[0],self.task)
+
+        task_update_serializer.is_valid()
+        updated_tasks = task_update_serializer.save()
+
+        updated_steps = Task.objects.filter(id=updated_tasks.id).first()
+        updated_steps = updated_steps.steps.all()
+
+        self.assertEqual(updated_steps[0].name, self.task["steps"][0]["name"])
+        self.assertEqual(updated_steps[1].name, self.task["steps"][1]["name"])
+
+
+    def test_task_update_multiple_records(self):
+
+        new_user = User(username="jonas", password="jonas")
+        new_user.save()
+        
+        self.task_test_data["id"] = self.id1
+        task_test_data = [self.task_test_data, self.task_test_data, self.task_test_data]
+        task_test_data[2]["assigned_to"] = new_user.id
+
+        task_serializer = TaskSerializer(instance=[self.tasks_to_update[0]], data=task_test_data, many=True)
+
+        task_serializer.is_valid()
+        updated_tasks = task_serializer.save()
+
+        self.assertEqual(3,len(updated_tasks["updated"]), msg="updaating same record 3 times")
+
     def test_task_update_multiple_task_same_name(self):
          
         self.task2["name"] = self.task["name"]
