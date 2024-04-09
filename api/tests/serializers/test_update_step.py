@@ -5,7 +5,7 @@ from api.serializers.task import Task
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from api.serializers.task import TaskSerializer
-from api.serializers.step import StepSerializer
+from api.serializers.step import StepSerializer, StepUpdateSerializer
 import random
 import string
 User = get_user_model()
@@ -145,6 +145,31 @@ class TestStepUpdate(TestCase):
         self.assertNotEqual(name,step.name)
 
 
+    def test_update_non_existing_step(self):
 
+        data = {"id":3000,"name":"first step"}
+
+        step = copy.deepcopy(self.steps[8])
+
+        step_serializer = StepUpdateSerializer(instance=step, data=data)
+        step_serializer.is_valid()
+        steps_count_before = Step.objects.count()
+        step = step_serializer.save()
+        steps_count_after = Step.objects.count()
+        
+        self.assertTrue(steps_count_before==steps_count_after , msg=" new step should not be created!")
+
+    def test_update_non_existing_step_name_check(self):
+
+        data = {"id":3000,"name":"first step"}
+
+        step = copy.deepcopy(self.steps[8])
+
+        step_serializer = StepUpdateSerializer(instance=step, data=data)
+        step_serializer.is_valid()
+
+        step = step_serializer.save()
+
+        self.assertTrue(step.name!=data["name"]  , msg=" step name should not be updated!")
 
 
