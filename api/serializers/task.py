@@ -13,34 +13,36 @@ User = get_user_model()
 class TaskSerializer(serializers.ModelSerializer):
 
     steps = StepSerializer(many=True, read_only=False, required=False)
-    authors = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all().values_list("id", flat=True))
-    assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all().values_list("id", flat=True), required=False)
+    # authors = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all().values_list("id", flat=True))
+    # assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all().values_list("id", flat=True), required=False)
+    
+    authors = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
+    assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     name = serializers.CharField(required=True)
-    id = serializers.IntegerField(required=False)
+    # id = serializers.IntegerField(required=False)
 
     class Meta:
         model = Task
-        fields = ["id","name", "description", "deadline", "priority", "authors", "assigned_to", "steps"]
+        fields = ["name", "description", "deadline", "priority", "authors", "assigned_to", "steps"]
         list_serializer_class = CustomListSerializer
 
     def create(self, validated_data):
 
-        result = {}
-        authors = validated_data.pop("authors")
-        steps = validated_data.pop("steps")
-        assigned_to = validated_data.pop("assigned_to")
-        steps_serializer = StepSerializer(data=steps, many=True)
+        authors = validated_data.pop("authors", None) #or None
+        steps = validated_data.pop("steps", None)
+        assigned_to = validated_data.pop("assigned_to", None)
+        
+        new_task = Task.objects.create(**validated_data)
+ 
+        if steps:
+            steps_serializer = StepSerializer(data=steps, many=True)
 
-        if steps_serializer.is_valid():
-            
-            new_task = Task.objects.create(**validated_data)
-            steps_model_list = steps_serializer.save()
-            new_task.steps.set(steps_model_list)
-            new_task.authors.set(authors)
-            result = new_task
-        else:  
-            result["errors"] = steps_serializer.errors
-
+            if steps_serializer.is_valid():
+                steps_model_list = steps_serializer.save()
+                new_task.steps.set(steps_model_list)
+        
+        new_task.authors.set(authors)
+        result = new_task
         return result
     
     def update(self, instance, validated_data):
@@ -49,7 +51,6 @@ class TaskSerializer(serializers.ModelSerializer):
         steps = validated_data.pop("steps", None)
 
         assigned_to = validated_data.pop("assigned_to", None)
-
 
         steps_to_update = Step.objects.filter(tasks__id=instance.id).all()
         steps_serializer = StepSerializer(instance=steps_to_update, data=steps, many=True)
