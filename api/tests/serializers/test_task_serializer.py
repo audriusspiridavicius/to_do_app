@@ -4,9 +4,12 @@ from django.utils import lorem_ipsum
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from api.serializers import TaskSerializer
-import copy
+from api.tests.base_test_class import BaseTestClass
+from django.core.exceptions import ValidationError
 
+import copy
 User = get_user_model()
+
 
 
 def create_test_data_on_database():
@@ -46,16 +49,19 @@ def create_test_data_on_database():
     task2.steps.set(task_2_steps)
 
 
-class TestTaskSerializerCreateMethod(TestCase):
+class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
+    serializer_class = TaskSerializer
+    model_class = Task
+    
 
     @classmethod
     def setUpTestData(cls) -> None:
-
+        
         cls.user_details = {
             "username": "usr",
             "password": "pswrd"
         }
-
+        
         user = User(**cls.user_details)
         user.save()
         
@@ -73,14 +79,57 @@ class TestTaskSerializerCreateMethod(TestCase):
     
 
     def test_task_created(self):
+        
 
-        task_serializer = TaskSerializer(data=self.task_test_data)
-        task_serializer.is_valid()
-        task_serializer.save()
+        self.save_serializer(data=self.task_test_data)
 
         self.assertTrue(len(Task.objects.all())==1)
 
+    def test_create_task_no_steps(self):
+
+        self.task_test_data.pop("steps")
         
+        new_task = self.save_serializer(data=self.task_test_data)
+
+        self.assertIsNotNone(new_task)
+        self.assertEqual(1,len(Task.objects.all()))
+    
+    def test_create_task_no_description(self):
+        self.task_test_data.pop("description")
+        
+        new_task = self.save_serializer(data=self.task_test_data)
+
+        self.assertIsNotNone(new_task)
+        self.assertEqual(1,len(Task.objects.all()))
+    
+    def test_create_task_no_deadline(self):
+        self.task_test_data.pop("deadline")
+        
+        with self.assertRaises(ValidationError):
+            self.save_serializer(data=self.task_test_data)
+
+    def test_create_task_no_priority(self):
+        self.task_test_data.pop("priority")
+        
+        task = self.save_serializer(data=self.task_test_data)
+
+        self.assertEqual(1,Task.objects.count())
+
+    def test_create_task_no_authors(self):
+        self.task_test_data.pop("authors")
+        
+        with self.assertRaises(ValidationError):
+            self.save_serializer(data=self.task_test_data)
+    
+    def test_create_task_no_assigned_to(self):
+        self.task_test_data.pop("assigned_to")
+        
+        task = self.save_serializer(data=self.task_test_data)
+
+        self.assertIsNotNone(task)
+        self.assertEqual(1,Task.objects.count())
+
+
 class TestTaskUpdate(TestCase):
 
 
