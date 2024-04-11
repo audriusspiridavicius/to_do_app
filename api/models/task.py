@@ -56,3 +56,6 @@ class Task(models.Model):
 
 
         return super().clean()
+    
+    def __str__(self) -> str:
+        return f"{self.name}"
