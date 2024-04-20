@@ -13,11 +13,14 @@ User=get_user_model()
 
 def DeadlineValidator(deadline:timezone.datetime) -> Any:
 
-    if deadline.year < timezone.now().year:
+    valid_year = deadline.year >= timezone.now().year
+    valid_month = deadline.month >= timezone.now().month
+    
+    if not valid_year:
         raise ValidationError(message=f"year value({deadline.year}) is not valid!")
-    elif deadline.month < timezone.now().month:
+    elif deadline.year == timezone.now().year and not valid_month:
         raise ValidationError(message=f"month value({deadline.month}) is not valid!")
-    elif deadline.day < timezone.now().day:
+    elif deadline.year == timezone.now().year and deadline.month == timezone.now().month and deadline.day < timezone.now().day:
         raise ValidationError(message=f"day value({deadline.day}) is not valid!")
 
 
