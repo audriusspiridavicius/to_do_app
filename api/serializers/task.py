@@ -42,6 +42,7 @@ class TaskSerializer(serializers.ModelSerializer):
                 new_task.steps.set(steps_model_list)
         
         new_task.authors.set(authors)
+        new_task.assigned_to = assigned_to
         result = new_task
         return result
     
