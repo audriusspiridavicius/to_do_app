@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from api.serializers import TaskSerializer
 from api.tests.base_test_class import BaseTestClass
+from api.tests.set_up_database import TestSetUptestDatabase
 from django.core.exceptions import ValidationError
 
 import copy
@@ -49,6 +50,7 @@ def create_test_data_on_database():
     task2.steps.set(task_2_steps)
 
 
+
 class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
     serializer_class = TaskSerializer
     model_class = Task
@@ -68,7 +70,7 @@ class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
         cls.task_test_data = {
             "name": "Create registration functionality",
             "description": lorem_ipsum.sentence(),
-            "deadline": timezone.datetime(2030,10,10),
+            "deadline": timezone.make_aware(timezone.datetime(2030,10,12)),
             "priority": Task.Priority.LOW,
             "authors":[user.id],
             "assigned_to":user.id,
@@ -130,6 +132,45 @@ class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
         self.assertEqual(1,Task.objects.count())
 
 
+    def test_task_name_saved(self):
+
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(self.task_test_data["name"],saved_task.name)
+
+    def test_task_description_saved(self):
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(self.task_test_data["description"],saved_task.description)
+
+    def test_task_deadline_saved(self):
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(self.task_test_data["deadline"],saved_task.deadline)
+
+    def test_task_priority_saved(self):
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(self.task_test_data["priority"],saved_task.priority)
+    
+    def test_task_created_saved(self):
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(saved_task.created.strftime("%Y-%m-%d"),timezone.now().strftime("%Y-%m-%d"))
+
+    def test_task_modified_saved(self):
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(saved_task.modified.strftime("%Y-%m-%d"),timezone.now().strftime("%Y-%m-%d"))
+    
+    def test_task_authors_saved(self):
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(self.task_test_data["authors"],list(saved_task.authors.values_list("id", flat=True).all())) 
+
+    def test_task_assigned_to_saved(self):
+       
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(self.task_test_data["assigned_to"], saved_task.assigned_to.id) 
+
+    def test_task_steps_saved(self):
+        saved_task = self.save_serializer(data=self.task_test_data)
+        self.assertEqual(self.task_test_data["steps"], list(saved_task.steps.values("name").all()))     
+
+
 class TestTaskUpdate(TestCase):
 
 
@@ -140,7 +181,7 @@ class TestTaskUpdate(TestCase):
         cls.task_test_data = {
             "name": "Create registration functionality",
             "description": lorem_ipsum.sentence(),
-            "deadline": timezone.datetime(2030,10,10),
+            "deadline": timezone.datetime(2030,10,12),
             "priority": Task.Priority.LOW,
             "authors":[1],
             "assigned_to":1,
@@ -190,7 +231,7 @@ class TestMultipleTaskUpdate(TestCase):
         cls.task_test_data = {
             "name": "test registration functionality. some random name",
             "description": lorem_ipsum.sentence(),
-            "deadline": timezone.datetime(2030,10,10),
+            "deadline": timezone.datetime(2030,10,20),
             "priority": Task.Priority.LOW,
             "authors":[1],
             "assigned_to":1,

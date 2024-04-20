@@ -10,7 +10,7 @@ User = get_user_model()
 
 class TestSetUptestDatabase:
 
-    def set_up_database(count = 10):
+    def set_up_database(self,count = 10):
 
         
         user_list = [User.objects.create(username=f"username{index}",password=f"user{index}") for index in range(count)]
@@ -21,7 +21,7 @@ class TestSetUptestDatabase:
         print(f"number of steps created: {Step.objects.count()}")
         
         
-        task_list = [
+        self.task_list = [
             {
                 "name": f"Create registration functionality{index}",
                 "description": lorem_ipsum.sentence(),
@@ -33,7 +33,7 @@ class TestSetUptestDatabase:
             
         ]
 
-        tasks = [Task.objects.create(**task) for task in task_list]
+        tasks = [Task.objects.create(**task) for task in self.task_list]
 
         [task.authors.set([random.choice(User.objects.all().values_list("id", flat=True))]) for task in tasks]
         tasks = [task.steps.set([1,random.choice(Step.objects.exclude(id=1).all().values_list("id", flat=True))]) for task in tasks]

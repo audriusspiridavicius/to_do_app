@@ -21,4 +21,4 @@ class BaseTestClass:
         
         else:
             if print_errors: print(f" ValidationError occured => {serializer.errors}") 
-            raise ValidationError(message=f"serializer {self.serializer_class} is not valid")
+            raise ValidationError(message=f"serializer {self.serializer_class} is not valid. error = {serializer.errors}")
