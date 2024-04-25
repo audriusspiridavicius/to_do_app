@@ -8,15 +8,18 @@ from api.serializers.task import TaskSerializer
 from api.serializers.step import StepSerializer, StepUpdateSerializer
 import random
 import string
-User = get_user_model()
+from api.models import UserCustom as User 
+# User = get_user_model()
 
 class TestStepUpdate(TestCase):
     
     def setUp(self) -> None:
         
         self.user_details = {
-            "username": "usr",
-            "password": "pswrd"
+            "email": "test@email.com",
+            "password": "pswrd",
+            "first_name":"abc",
+            "last_name":"123"
         }
 
         user = User(**self.user_details)
@@ -27,7 +30,7 @@ class TestStepUpdate(TestCase):
             "description": "best task ever",
             "deadline": timezone.datetime(2030,10,10),
             "priority": Task.Priority.LOW,
-            "authors":[user.id],
+            "authors":[{"id":user.id, "fullname":user.get_full_name()}],
             "assigned_to":user.id,
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
@@ -35,6 +38,11 @@ class TestStepUpdate(TestCase):
         self.task = TaskSerializer(data=self.task_data)
         
         self.task.is_valid()
+        
+        
+        print(f"self.task error ============================================= {self.task.errors}")
+        
+        
         self.task = self.task.save()
         
         self.steps_dict = [{"name":f"Step name Value{index}", "tasks":[]} for index in range(10)]

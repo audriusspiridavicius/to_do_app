@@ -14,19 +14,20 @@ class TestCreateStep(TestCase):
     def setUp(self) -> None:
         
         self.user_details = {
-            "username": "usr",
+            "email": "test@email.com",
             "password": "pswrd"
         }
 
         user = User(**self.user_details)
         user.save()
+        authors = [{"id":user.id,"fullname":user.get_full_name()}]
         
         self.task_data = {
             "name": "best task ever",
             "description": "best task ever",
             "deadline": timezone.datetime(2030,10,10),
             "priority": Task.Priority.LOW,
-            "authors":[user.id],
+            "authors":authors,
             "assigned_to":user.id,
             "steps":[{"name":"first step"},{"name":"second step"}]
         }

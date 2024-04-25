@@ -2,7 +2,7 @@ from django.test import TestCase
 from api.models.task import Task
 from api.models.step import Step
 from datetime import datetime
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.timezone import make_aware
 import logging
 from dataclasses import dataclass, asdict, field
@@ -11,6 +11,7 @@ import random
 import string
 import copy
 from django.utils import timezone
+from api.models import UserCustom as User
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class TaskData:
 @dataclass(kw_only=True, frozen=False)
 class TaskDataWithRelationships(TaskData):
     authors: list[User] = field(default_factory=list)
-    assigned_to: User = User(username="abc", password="123")
+    assigned_to: User = User(email="test@email.com", password="123")
     steps: list[Step] = field(default_factory=list)
 
 class TestTaskCreateWithoutRelationships(TestCase):
@@ -105,10 +106,10 @@ class TestTaskCreateWithRelationships(TestCase):
         return super().setUpTestData()
     
     def setUp(self) -> None:
-        self.username = "test user"
+        self.email = "test user"
         self.password = "12345"
 
-        self.user = User(username=self.username, password=self.password)
+        self.user = User(email=self.email, password=self.password)
         self.user.save()
 
         self.test_data.authors.append(self.user)
@@ -141,7 +142,7 @@ class TestTaskCreateWithRelationships(TestCase):
         author = User.objects.first()
 
         self.assertTrue(author, msg="new user should be saved")
-        self.assertEqual(author.username, self.username, msg="username should match")
+        self.assertEqual(author.email, self.email, msg="username should match")
         self.assertEqual(author.password, self.password, msg="password value should match")
 
     def test_task_has_author(self):
@@ -164,7 +165,7 @@ class TestTaskCreateWithRelationships(TestCase):
         self.assertIsNotNone(task)
         self.assertIsNotNone(assigned_to, msg="task should have assignee")
         self.assertEqual(1,assigned_to.id)
-        self.assertEqual(self.username, assigned_to.username)
+        self.assertEqual(self.email, assigned_to.email)
 
     def test_task_has_steps(self):
 
@@ -183,10 +184,10 @@ class TestTaskName(TestCase):
 
     def setUp(self) -> None:
 
-        self.username = "username"
+        self.email = "test@email.com"
         self.password = "password"
 
-        self.author = User(username=self.username, password=self.password)
+        self.author = User(email=self.email, password=self.password)
 
         self.author.save()
 
@@ -262,10 +263,10 @@ class TestDeadlineField(TestCase):
 
     def setUp(self) -> None:
 
-        self.username = "username"
+        self.email = "username"
         self.password = "password"
 
-        self.author = User(username=self.username, password=self.password)
+        self.author = User(email=self.email, password=self.password)
 
         self.author.save()
 
@@ -322,10 +323,10 @@ class TestPriorityField(TestCase):
     
     def setUp(self) -> None:
 
-        self.username = "username"
+        self.email = "username"
         self.password = "password"
 
-        self.author = User(username=self.username, password=self.password)
+        self.author = User(email=self.email, password=self.password)
         self.author.save()
 
 

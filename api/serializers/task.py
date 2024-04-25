@@ -28,7 +28,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
         authors = validated_data.pop("authors", None) #or None
         
-        authors = [author.id for author in authors]
+        authors = [author["id"] for author in authors]
         steps = validated_data.pop("steps", None)
         assigned_to = validated_data.pop("assigned_to", None)
         
@@ -53,8 +53,8 @@ class TaskSerializer(serializers.ModelSerializer):
         steps = validated_data.pop("steps", None)
   
         assigned_to = validated_data.pop("assigned_to", None)
-
-        assigned_to = assigned_to.id
+        if assigned_to:
+            assigned_to = assigned_to.id
         steps_to_update = Step.objects.filter(tasks__id=instance.id).all()
         steps_serializer = StepSerializer(instance=steps_to_update, data=steps, many=True)
 

@@ -7,15 +7,15 @@ from api.serializers import TaskSerializer
 from api.tests.base_test_class import BaseTestClass
 from api.tests.set_up_database import TestSetUptestDatabase
 from django.core.exceptions import ValidationError
-
+from api.models import UserCustom as User
 import copy
-User = get_user_model()
+
 
 
 
 def create_test_data_on_database():
 
-    users = [{"username":f"usrname{index}","password":f"pswrd{index}"} for index in range(10)]
+    users = [{"email":f"testemail{index}@email.com","password":f"pswrd{index}"} for index in range(10)]
     userlist = [ User(**user_details) for user_details in users]
     
     # create users
@@ -60,7 +60,7 @@ class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
     def setUpTestData(cls) -> None:
         
         cls.user_details = {
-            "username": "usr",
+            "email": "test@email.com",
             "password": "pswrd"
         }
         
@@ -72,7 +72,7 @@ class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
             "description": lorem_ipsum.sentence(),
             "deadline": timezone.make_aware(timezone.datetime(2030,10,12)),
             "priority": Task.Priority.LOW,
-            "authors":[user.id],
+            "authors":[{"id":user.id, "fullname":user.get_full_name()}],
             "assigned_to":user.id,
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
@@ -178,12 +178,13 @@ class TestTaskUpdate(TestCase):
     def setUpTestData(cls) -> None:
         create_test_data_on_database()
         
+        user = User.objects.filter(id=1).first()
         cls.task_test_data = {
             "name": "Create registration functionality",
             "description": lorem_ipsum.sentence(),
             "deadline": timezone.datetime(2030,10,12),
             "priority": Task.Priority.LOW,
-            "authors":[1],
+            "authors":[{"id":user.id, "fullname":user.get_full_name()}],
             "assigned_to":1,
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
@@ -228,12 +229,15 @@ class TestMultipleTaskUpdate(TestCase):
     def setUpTestData(cls) -> None:
         create_test_data_on_database()
 
+        usr = User.objects.filter(id=1).first()
+        authors = [{"id":usr.id,"fullname":usr.get_full_name()}]
+        
         cls.task_test_data = {
             "name": "test registration functionality. some random name",
             "description": lorem_ipsum.sentence(),
             "deadline": timezone.datetime(2030,10,20),
             "priority": Task.Priority.LOW,
-            "authors":[1],
+            "authors":authors,
             "assigned_to":1,
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
@@ -270,7 +274,7 @@ class TestMultipleTaskUpdate(TestCase):
 
     def test_task_update_multiple_records(self):
 
-        new_user = User(username="jonas", password="jonas")
+        new_user = User(email="test@email.com", password="jonas")
         new_user.save()
         
         self.task_test_data["id"] = self.id1
