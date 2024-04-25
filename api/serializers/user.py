@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
 
+from api.models import UserCustom
+from api.serializers.customlistserializer import CustomListSerializer
 # User Serializer
 
 class UserSerializer(serializers.ModelSerializer):
@@ -11,17 +12,18 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
     
     class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'password', 'fullname']
+        model = UserCustom
+        fields = ['id', 'email', 'password', 'fullname']
         extra_kwargs = {
             'password': {'write_only': True},
-            'username': {'required': True},
             'email': {'required': True}
         }
 
 
 class UserFullNameSerializer(UserSerializer):
     
+    
     class Meta:
-        model = User
+        model = UserCustom
         fields = ['id','fullname']
+        list_serializer_class = CustomListSerializer
