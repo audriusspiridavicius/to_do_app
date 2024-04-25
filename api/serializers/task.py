@@ -11,19 +11,16 @@ User = get_user_model()
    
 
 class TaskSerializer(serializers.ModelSerializer):
-
-    steps = StepSerializer(many=True, read_only=False, required=False)
-    # authors = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all().values_list("id", flat=True))
-    # assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all().values_list("id", flat=True), required=False)
     
+    steps = StepSerializer(many=True, read_only=False, required=False)
+    deadline = serializers.DateTimeField(required=True, format="%Y-%m-%d %H:%M:%S")
     authors = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
     assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     name = serializers.CharField(required=True)
-    # id = serializers.IntegerField(required=False)
 
     class Meta:
         model = Task
-        fields = ["name", "description", "deadline", "priority", "authors", "assigned_to", "steps"]
+        fields = ["id","name", "description", "deadline", "priority", "authors", "assigned_to", "steps"]
         list_serializer_class = CustomListSerializer
 
     def create(self, validated_data):
