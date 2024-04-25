@@ -7,8 +7,8 @@ from django.contrib.auth import get_user_model
 from api.models import Step
 from api.serializers.user import UserFullNameSerializer
 
+from api.models import UserCustom
 
-User = get_user_model()
    
 
 class TaskSerializer(serializers.ModelSerializer):

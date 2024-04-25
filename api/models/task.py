@@ -6,8 +6,8 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from api.models.user import UserCustom
 
-User=get_user_model()
 
 
 
@@ -48,8 +48,8 @@ class Task(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    authors = models.ManyToManyField(User, related_name="author_tasks", blank=False)
-    assigned_to = models.ForeignKey(User, related_name="tasks", on_delete=models.PROTECT, null=True, blank=True) #Assignee
+    authors = models.ManyToManyField(UserCustom, related_name="author_tasks", blank=False)
+    assigned_to = models.ForeignKey(UserCustom, related_name="tasks", on_delete=models.PROTECT, null=True, blank=True) #Assignee
 
     steps = models.ManyToManyField("Step")
 

@@ -1,7 +1,8 @@
 from rest_framework import viewsets
 from api.serializers.user import UserSerializer
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
+User=get_user_model()
 
 # Create your views here.
 
