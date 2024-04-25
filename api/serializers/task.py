@@ -15,8 +15,8 @@ class TaskSerializer(serializers.ModelSerializer):
     
     steps = StepSerializer(many=True, read_only=False, required=False)
     deadline = serializers.DateTimeField(required=True, format="%Y-%m-%d %H:%M:%S")
-    authors = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
-    assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
+    assigned_to = serializers.PrimaryKeyRelatedField(queryset=UserCustom.objects.all(), required=False)
+    authors = UserFullNameSerializer(many=True, read_only=False)
     name = serializers.CharField(required=True)
 
     class Meta:
@@ -27,6 +27,8 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
 
         authors = validated_data.pop("authors", None) #or None
+        
+        authors = [author.id for author in authors]
         steps = validated_data.pop("steps", None)
         assigned_to = validated_data.pop("assigned_to", None)
         
@@ -45,12 +47,14 @@ class TaskSerializer(serializers.ModelSerializer):
         return result
     
     def update(self, instance, validated_data):
-
         authors = validated_data.pop("authors", None)
-        steps = validated_data.pop("steps", None)
 
+        authors = [author["id"] for author in authors]
+        steps = validated_data.pop("steps", None)
+  
         assigned_to = validated_data.pop("assigned_to", None)
 
+        assigned_to = assigned_to.id
         steps_to_update = Step.objects.filter(tasks__id=instance.id).all()
         steps_serializer = StepSerializer(instance=steps_to_update, data=steps, many=True)
 
@@ -58,20 +62,12 @@ class TaskSerializer(serializers.ModelSerializer):
             saved_steps = steps_serializer.save() # will call update because instance is passed
             instance.steps.set(saved_steps["updated"])
         instance.authors.set(authors)
-
+        
         saved_task = super().update(instance, validated_data)
-        saved_task.assigned_to_id = assigned_to
+        saved_task.assigned_to = UserCustom.objects.filter(id=assigned_to).first()
         saved_task.save()
 
         return saved_task
 
 
 
-class TaskGetListSerializer(TaskSerializer):
-    
-    authors = UserFullNameSerializer(many=True)
-    assigned_to = UserFullNameSerializer(many=False)
-    
-    class Meta:
-        model = Task
-        fields = ["id","name", "description", "deadline", "priority", "authors", "assigned_to", "steps"]
