@@ -306,15 +306,14 @@ class TestDeadlineField(TestCase):
 
     def test_deadline_past_month_validation_error(self):
 
-        self.task.deadline = timezone.datetime(2025,1,11)
+        self.task.deadline = timezone.datetime(2024,1,11)
 
         with self.assertRaisesMessage(ValidationError, expected_message=f"month value({self.task.deadline.month}) is not valid!"):
             self.task.full_clean()
 
     def test_deadline_past_day_validation_error(self):
 
-        self.task.deadline = timezone.datetime(2025,10,4)
-
+        self.task.deadline = timezone.datetime(timezone.now().year,timezone.now().month,timezone.now().day-1)
         with self.assertRaisesMessage(ValidationError, expected_message=f"day value({self.task.deadline.day}) is not valid!"):
             self.task.full_clean()
 
