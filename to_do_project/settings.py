@@ -39,9 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -145,3 +147,9 @@ LOGGING = {
         },
     },
 }
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Add the origins of your Next.js application
+    "https://example.com",
+    "http://127.0.0.1:3000"
+    # Add more origins as needed
+]
