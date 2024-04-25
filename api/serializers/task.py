@@ -5,6 +5,7 @@ from api.serializers.step import StepSerializer
 from api.serializers.customlistserializer import CustomListSerializer
 from django.contrib.auth import get_user_model
 from api.models import Step
+from api.serializers.user import UserFullNameSerializer
 
 
 User = get_user_model()
@@ -64,3 +65,13 @@ class TaskSerializer(serializers.ModelSerializer):
 
         return saved_task
 
+
+
+class TaskGetListSerializer(TaskSerializer):
+    
+    authors = UserFullNameSerializer(many=True)
+    assigned_to = UserFullNameSerializer(many=False)
+    
+    class Meta:
+        model = Task
+        fields = ["id","name", "description", "deadline", "priority", "authors", "assigned_to", "steps"]
