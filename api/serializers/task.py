@@ -71,3 +71,11 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 
+class TaskSerializerGet(TaskSerializer):
+    
+    assigned_to = UserFullNameSerializer(many=False, read_only=False)
+
+    class Meta:
+        model = Task
+        fields = ["id","name", "description", "deadline", "priority", "authors", "assigned_to", "steps"]
+        list_serializer_class = CustomListSerializer

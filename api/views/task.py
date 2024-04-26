@@ -1,5 +1,5 @@
 from rest_framework import viewsets, mixins
-from api.serializers.task import TaskSerializer
+from api.serializers.task import TaskSerializer, TaskSerializerGet
 from api.models import Task, Step
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -34,5 +34,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         if self.action == "get_steps":
             self.serializer_class = StepSerializer
+        elif self.action == "retrieve" or self.action == "list":
+            self.serializer_class = TaskSerializerGet
         return super().get_serializer_class()
     
