@@ -15,8 +15,8 @@ class TaskSerializer(serializers.ModelSerializer):
     
     steps = StepSerializer(many=True, read_only=False, required=False)
     deadline = serializers.DateTimeField(required=True, format="%Y-%m-%d %H:%M:%S")
-    assigned_to = serializers.PrimaryKeyRelatedField(queryset=UserCustom.objects.all(), required=False)
-    authors = UserFullNameSerializer(many=True, read_only=False)
+    assigned_to = UserFullNameSerializer(required=False)
+    authors = UserFullNameSerializer(many=True)
     name = serializers.CharField(required=True)
 
     class Meta:
@@ -42,19 +42,25 @@ class TaskSerializer(serializers.ModelSerializer):
                 new_task.steps.set(steps_model_list)
         
         new_task.authors.set(authors)
-        new_task.assigned_to = assigned_to
+        if assigned_to:
+            new_task.assigned_to = UserCustom.objects.filter(id=assigned_to.get("id", 0)).first()
+        new_task.save()
+        
         result = new_task
         return result
     
     def update(self, instance, validated_data):
-        authors = validated_data.pop("authors", None)
 
+        authors = validated_data.pop("authors", None)
         authors = [author["id"] for author in authors]
         steps = validated_data.pop("steps", None)
-  
+        
         assigned_to = validated_data.pop("assigned_to", None)
         if assigned_to:
-            assigned_to = assigned_to.id
+            assigned_to = assigned_to["id"]
+        else:
+            assigned_to = 0
+
         steps_to_update = Step.objects.filter(tasks__id=instance.id).all()
         steps_serializer = StepSerializer(instance=steps_to_update, data=steps, many=True)
 

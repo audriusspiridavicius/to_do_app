@@ -28,7 +28,7 @@ class TestCreateStep(TestCase):
             "deadline": timezone.datetime(2030,10,10),
             "priority": Task.Priority.LOW,
             "authors":authors,
-            "assigned_to":user.id,
+            "assigned_to":{"id":user.id},
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
     

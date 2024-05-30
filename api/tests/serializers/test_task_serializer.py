@@ -73,7 +73,7 @@ class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
             "deadline": timezone.make_aware(timezone.datetime(2030,10,12)),
             "priority": Task.Priority.LOW,
             "authors":[{"id":user.id, "fullname":user.get_full_name()}],
-            "assigned_to":user.id,
+            "assigned_to":{"id":user.id},
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
 
@@ -159,12 +159,12 @@ class TestTaskSerializerCreateMethod(TestCase, BaseTestClass):
     
     def test_task_authors_saved(self):
         saved_task = self.save_serializer(data=self.task_test_data)
-        self.assertEqual(self.task_test_data["authors"],list(saved_task.authors.values_list("id", flat=True).all())) 
+        self.assertEqual([self.task_test_data["authors"][0]["id"]],list(saved_task.authors.values_list("id", flat=True).all())) 
 
     def test_task_assigned_to_saved(self):
        
         saved_task = self.save_serializer(data=self.task_test_data)
-        self.assertEqual(self.task_test_data["assigned_to"], saved_task.assigned_to.id) 
+        self.assertEqual(self.task_test_data["assigned_to"]["id"], saved_task.assigned_to.id) 
 
     def test_task_steps_saved(self):
         saved_task = self.save_serializer(data=self.task_test_data)
@@ -185,7 +185,7 @@ class TestTaskUpdate(TestCase):
             "deadline": timezone.datetime(2030,10,12),
             "priority": Task.Priority.LOW,
             "authors":[{"id":user.id, "fullname":user.get_full_name()}],
-            "assigned_to":1,
+            "assigned_to":{"id":1},
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
 
@@ -238,7 +238,7 @@ class TestMultipleTaskUpdate(TestCase):
             "deadline": timezone.datetime(2030,10,20),
             "priority": Task.Priority.LOW,
             "authors":authors,
-            "assigned_to":1,
+            "assigned_to":{"id":1},
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
         cls.tasks_to_update = Task.objects.filter(id__in=[1,2]).all()
@@ -279,14 +279,14 @@ class TestMultipleTaskUpdate(TestCase):
         
         self.task_test_data["id"] = self.id1
         task_test_data = [self.task_test_data, self.task_test_data, self.task_test_data]
-        task_test_data[2]["assigned_to"] = new_user.id
+        task_test_data[2]["assigned_to"] = {"id":new_user.id}
 
         task_serializer = TaskSerializer(instance=[self.tasks_to_update[0]], data=task_test_data, many=True)
 
         task_serializer.is_valid()
         updated_tasks = task_serializer.save()
 
-        self.assertEqual(3,len(updated_tasks["updated"]), msg="updaating same record 3 times")
+        self.assertEqual(3,len(updated_tasks["updated"]), msg="updating same record 3 times")
 
     def test_task_update_multiple_task_same_name(self):
          
@@ -369,7 +369,7 @@ class TestMultipleTaskUpdate(TestCase):
         self.task2.pop("assigned_to")
 
         saved_tasks = self.__save_serializer(instance=self.tasks_to_update, data=[self.task2,self.task], many=True)["updated"]
-
+        print(f"bbbbb {saved_tasks}")
         self.assertEqual(2, len(saved_tasks))
     
 

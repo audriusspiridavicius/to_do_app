@@ -31,7 +31,7 @@ class TestStepUpdate(TestCase):
             "deadline": timezone.datetime(2030,10,10),
             "priority": Task.Priority.LOW,
             "authors":[{"id":user.id, "fullname":user.get_full_name()}],
-            "assigned_to":user.id,
+            "assigned_to":{"id":user.id},
             "steps":[{"name":"first step"},{"name":"second step"}]
         }
     
@@ -40,7 +40,7 @@ class TestStepUpdate(TestCase):
         self.task.is_valid()
         
         
-        print(f"self.task error ============================================= {self.task.errors}")
+        # print(f"self.task error ============================================= {self.task.errors}")
         
         
         self.task = self.task.save()

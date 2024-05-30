@@ -94,7 +94,7 @@ class TestTaskCreateWithoutRelationships(TestCase):
 
     def test_task_has_correct_priority(self):
 
-        self.log_data()
+        # self.log_data()
         self.assertTrue(Task.Priority.LOW==self.new_task_on_db.priority)
 
 class TestTaskCreateWithRelationships(TestCase):

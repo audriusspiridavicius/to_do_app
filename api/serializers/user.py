@@ -22,8 +22,15 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserFullNameSerializer(UserSerializer):
     
-    
+    id = serializers.IntegerField(required=True)
     class Meta:
         model = UserCustom
         fields = ['id','fullname']
         list_serializer_class = CustomListSerializer
+        
+class LoggedUserDetailsSerializer(UserSerializer):
+    
+    class Meta:
+        model = UserCustom
+        exclude = ['password']
+        
