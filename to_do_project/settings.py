@@ -151,7 +151,8 @@ LOGGING = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Add the origins of your Next.js application
     "https://example.com",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
     # Add more origins as needed
 ]
 
@@ -163,3 +164,4 @@ REST_FRAMEWORK = {
     )
 
 }
+CORS_ALLOW_HEADERS = "*"
