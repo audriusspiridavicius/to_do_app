@@ -6,15 +6,16 @@ from rest_framework.response import Response
 from api.serializers.step import StepSerializer
 from .step_response import StepResponse
 from rest_framework import permissions
-
+from rest_framework.pagination import PageNumberPagination
+from api.paging import StandartPagination
 
 class TaskViewSet(viewsets.ModelViewSet):
     
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
+    pagination_class = StandartPagination
+    
     def get_queryset(self):
 
         task_name = self.kwargs.get("taskname", None)
