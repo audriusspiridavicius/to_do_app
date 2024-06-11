@@ -46,6 +46,7 @@ class UserCustom(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserCustomManager()
+    profile_picture = models.ImageField(upload_to= "profile/", default="profile/default.png")
 
 
     def __str__(self):
