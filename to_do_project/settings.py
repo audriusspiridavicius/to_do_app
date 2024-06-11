@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'corsheaders',
+    'django_cleanup.apps.CleanupConfig',
 ]
 AUTH_USER_MODEL = "api.UserCustom"
 
