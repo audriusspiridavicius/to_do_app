@@ -34,3 +34,14 @@ class LoggedUserDetailsSerializer(UserSerializer):
         model = UserCustom
         exclude = ['password']
         
+class UpdateUserDetailsSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = UserCustom
+        fields = ['id','first_name', 'last_name', 'email', 'profile_picture','is_staff']
+        extra_kwargs = {
+            'first_name': {'required':True},
+            'last_name': {'required':True},
+            'email': {'required':True},
+            'profile_picture':{'required':True},
+        }
