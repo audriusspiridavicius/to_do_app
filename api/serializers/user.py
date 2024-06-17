@@ -42,6 +42,6 @@ class UpdateUserDetailsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'first_name': {'required':True},
             'last_name': {'required':True},
-            'email': {'required':True},
-            'profile_picture':{'required':True},
+            'email': {'required':True, 'read_only':True},
+            'profile_picture':{'required':False},
         }

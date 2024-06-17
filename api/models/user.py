@@ -1,7 +1,9 @@
-from typing import Any
+from typing import Any, Iterable
+import PIL.Image
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
-
+from PIL import Image
+from io import BytesIO
 class UserCustomManager(UserManager):
     
     use_in_migrations = True
@@ -28,10 +30,6 @@ class UserCustomManager(UserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
         return self.create_user(email, password, **extra_fields)
         
 
@@ -59,3 +57,11 @@ class UserCustom(AbstractUser):
         verbose_name = 'user'
         verbose_name_plural = 'users'
         
+    def save(self, *args: Any, **kwargs: Any):
+        
+        super().save(*args, **kwargs)
+        
+        if self.profile_picture:
+            img = Image.open(self.profile_picture.path).convert('RGB')
+            img.thumbnail((100,100))
+            img.save(self.profile_picture.path, quality=100)

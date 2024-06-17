@@ -14,7 +14,8 @@ class UserCustomAdmin(UserAdmin):
    list_display = ['id','email', 'first_name', 'last_name']
    list_display_links = ['email']
    fieldsets = (
-      (_("Personal info"), {"fields": ("first_name", "last_name", "email")}),
+      (_("Personal info"), 
+       {"fields": ("first_name", "last_name", "email", "password",)}),
       (
          _("Permissions"),
          {
@@ -27,7 +28,6 @@ class UserCustomAdmin(UserAdmin):
                ),
          },
       ),
-      (_("Important dates"), {"fields": ("last_login", "date_joined")}),
    )
    add_fieldsets = (
       (
